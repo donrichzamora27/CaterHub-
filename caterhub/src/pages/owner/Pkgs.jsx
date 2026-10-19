@@ -1,0 +1,9 @@
+import { supabase } from '../../lib/supabase.js';
+import { useState } from 'react';
+import { peso } from '../../data.js';
+
+export default function Pkgs({S,c}){const [n,setN]=useState({name:'',price:'',min:'',max:''});
+ const add=async()=>{if(!n.name||!+n.price||!+n.min||!+n.max)return;const {error}=await supabase.from('catering_packages').insert({caterer_id:c.id,package_name:n.name,price_per_head:+n.price,minimum_guests:+n.min,maximum_guests:+n.max,inclusions:'Food for guests'});if(error){alert(error.message);return}setN({name:'',price:'',min:'',max:''});await S.reload(S.user)};
+ return <div className="card"><h1 style={{fontSize:28}}>Packages & photos</h1>{c.pkgs.map(p=><div key={p.id} style={{display:'flex',justifyContent:'space-between',padding:'12px 0',borderTop:'1px solid var(--ln)',flexWrap:'wrap',gap:8}}><div><b>{p.name}</b> {!p.active&&<span className="chip">Inactive</span>}<div className="mut sm">{peso(p.price)}/head · {p.min}–{p.max} guests</div></div><button className="lk" onClick={async()=>{await supabase.from('catering_packages').update({status:p.active?'Inactive':'Active'}).eq('package_id',p.id);await S.reload(S.user)}}>{p.active?'Deactivate':'Reactivate'}</button></div>)}
+ <h3 style={{marginTop:20}}>Add a package</h3><div className="row"><div><label>Name *</label><input value={n.name} onChange={e=>setN({...n,name:e.target.value})}/></div><div><label>Price per head *</label><input value={n.price} onChange={e=>setN({...n,price:e.target.value})}/></div><div><label>Min guests *</label><input value={n.min} onChange={e=>setN({...n,min:e.target.value})}/></div><div><label>Max guests *</label><input value={n.max} onChange={e=>setN({...n,max:e.target.value})}/></div></div>
+ <button className="btn" style={{marginTop:14}} onClick={add}>Add package</button><p className="mut sm">Photo uploads accept JPG or PNG only, up to 2 MB each (connect file storage in the backend).</p></div>}
